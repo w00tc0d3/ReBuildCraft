@@ -89,6 +89,7 @@ public class TileFurnace extends TileEntity implements ISidedInventory {
         if(itemStacks[var1].stackSize <= var2) {
             itemStack = itemStacks[var1];
             itemStacks[var1] = null;
+            this.markDirty();
             return itemStack;
         }
         itemStack = itemStacks[var1].splitStack(var2);
@@ -96,6 +97,7 @@ public class TileFurnace extends TileEntity implements ISidedInventory {
         if (itemStacks[var1].stackSize == 0)
             itemStacks[var1] = null;
 
+        this.markDirty();
         return itemStack;
     }
 
@@ -118,6 +120,7 @@ public class TileFurnace extends TileEntity implements ISidedInventory {
         if (var2 != null && var2.stackSize > this.getInventoryStackLimit()) {
             var2.stackSize = this.getInventoryStackLimit();
         }
+        this.markDirty();
     }
 
     @Override

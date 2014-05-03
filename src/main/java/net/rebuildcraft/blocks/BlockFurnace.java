@@ -1,10 +1,12 @@
 package net.rebuildcraft.blocks;
 
+import cpw.mods.fml.common.FMLCommonHandler;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 import net.minecraft.block.Block;
 import net.minecraft.block.material.Material;
 import net.minecraft.client.renderer.texture.IIconRegister;
+import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.world.World;
 import net.rebuildcraft.RebuildCraft;
@@ -35,5 +37,14 @@ public class BlockFurnace extends Block {
     @Override
     public TileEntity createTileEntity(World world, int metadata) {
         return new TileFurnace();
+    }
+
+    @Override
+    public boolean onBlockActivated(World world, int x, int y, int z, EntityPlayer player, int var1, float var2, float var3, float var4) {
+        Side side = FMLCommonHandler.instance().getEffectiveSide();
+        if(side == Side.CLIENT) {
+            player.openGui(RebuildCraft.instance, 0, world, x, y, z);
+        }
+        return false;
     }
 }

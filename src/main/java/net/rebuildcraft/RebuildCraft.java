@@ -5,7 +5,9 @@ import cpw.mods.fml.common.SidedProxy;
 import cpw.mods.fml.common.event.FMLInitializationEvent;
 import cpw.mods.fml.common.event.FMLPostInitializationEvent;
 import cpw.mods.fml.common.event.FMLPreInitializationEvent;
+import cpw.mods.fml.common.network.NetworkRegistry;
 import net.rebuildcraft.blocks.RegisterBlocks;
+import net.rebuildcraft.gui.GuiHandler;
 import net.rebuildcraft.net.CommonProxy;
 import net.rebuildcraft.tiles.RegisterTiles;
 
@@ -20,6 +22,8 @@ public class RebuildCraft {
     @SidedProxy(modId = modid, clientSide = "net.rebuildcraft.net.ClientProxy", serverSide = "net.rebuildcraft.net.CommonProxy")
     public static CommonProxy proxy;
 
+    private GuiHandler guiHandler = new GuiHandler();
+
     @Mod.EventHandler
     public void preInit(FMLPreInitializationEvent event) {
         RegisterBlocks.registerBlocks();
@@ -29,6 +33,7 @@ public class RebuildCraft {
     @Mod.EventHandler
     public void init(FMLInitializationEvent event) {
         proxy.registerRenderers();
+        NetworkRegistry.INSTANCE.registerGuiHandler(this, guiHandler);
     }
 
     @Mod.EventHandler
