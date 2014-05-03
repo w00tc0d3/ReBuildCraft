@@ -24,7 +24,7 @@ public class GuiMechanicalFurnace extends GuiContainer {
     @Override
     protected void drawGuiContainerForegroundLayer(int var1, int var2) {
         super.drawGuiContainerForegroundLayer(var1, var2);
-        fontRendererObj.drawString("Mechanical Furnace", xSize/2, ySize/2, headerColour);
+        fontRendererObj.drawString("Mechanical Furnace", getOffset("Mechanical Furnace"), 5, textColour);
     }
 
     @Override
@@ -34,5 +34,9 @@ public class GuiMechanicalFurnace extends GuiContainer {
         int x = (width - xSize) / 2;
         int y = (height - ySize) / 2;
         this.drawTexturedModalRect(x, y, 0, 0, xSize, ySize);
+    }
+
+    protected int getOffset(String s) {
+        return(xSize - fontRendererObj.getStringWidth(s)) / 2;
     }
 }
