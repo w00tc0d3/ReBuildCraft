@@ -1,15 +1,22 @@
 package net.rebuildcraft.tiles;
 
 import buildcraft.api.mj.MjBattery;
+import net.minecraft.block.Block;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.init.Blocks;
 import net.minecraft.inventory.IInventory;
 import net.minecraft.inventory.ISidedInventory;
 import net.minecraft.item.ItemStack;
+import net.minecraft.item.crafting.FurnaceRecipes;
 import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.nbt.NBTTagList;
 import net.minecraft.network.NetworkManager;
 import net.minecraft.network.Packet;
 import net.minecraft.network.play.server.S35PacketUpdateTileEntity;
 import net.minecraft.tileentity.TileEntity;
+
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Created by netchip on 5/2/14.
@@ -20,11 +27,11 @@ public class TileFurnace extends TileEntity implements ISidedInventory {
     private double mjStored;
     private ItemStack[] itemStacks = new ItemStack[3];
     private int ticks = 0;
+    private String nameInv = "InventoryMechanicFurnace";
 
     @Override
     public void updateEntity() {
         if(ticks == 20) {
-            System.out.println("Tile Entity!");
             ticks = 0;
         }
         ticks++;
@@ -35,6 +42,18 @@ public class TileFurnace extends TileEntity implements ISidedInventory {
         super.writeToNBT(tag);
 
         tag.setDouble("mjStored", mjStored);
+
+        NBTTagList nbtTagList = new NBTTagList();
+        for(int i = 0; i < itemStacks.length; i++) {
+            if(itemStacks[i] != null) {
+                NBTTagCompound nbt = new NBTTagCompound();
+                nbt.setByte("Slot", (byte) i);
+                itemStacks[i].writeToNBT(nbt);
+                nbtTagList.appendTag(nbt);
+            }
+        }
+        tag.setTag("Items", nbtTagList);
+        tag.setString("CustomName", nameInv);
     }
 
     @Override
@@ -42,6 +61,22 @@ public class TileFurnace extends TileEntity implements ISidedInventory {
         super.readFromNBT(tag);
 
         mjStored = tag.getDouble("mjStored");
+
+        NBTTagList nbtTagList = tag.getTagList("Items", 10);
+        itemStacks = new ItemStack[getSizeInventory()];
+
+        if (tag.hasKey("CustomName", 8)) {
+            nameInv = tag.getString("CustomName");
+        }
+
+        for (int i = 0; i < nbtTagList.tagCount(); i++) {
+            NBTTagCompound nbt = nbtTagList.getCompoundTagAt(i);
+            int j = nbt.getByte("Slot") & 255;
+
+            if (j >= 0 && j < itemStacks.length) {
+                itemStacks[j] = ItemStack.loadItemStackFromNBT(nbt);
+            }
+        }
     }
 
     @Override
@@ -125,12 +160,12 @@ public class TileFurnace extends TileEntity implements ISidedInventory {
 
     @Override
     public String getInventoryName() {
-        return "InventoryMechanicFurnace";
+        return nameInv;
     }
 
     @Override
     public boolean hasCustomInventoryName() {
-        return false;
+        return true;
     }
 
     @Override
@@ -160,4 +195,6 @@ public class TileFurnace extends TileEntity implements ISidedInventory {
     public boolean isItemValidForSlot(int var1, ItemStack var2) {
         return false;
     }
+
+
 }
