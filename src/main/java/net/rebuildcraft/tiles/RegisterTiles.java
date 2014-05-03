@@ -7,6 +7,6 @@ import cpw.mods.fml.common.registry.GameRegistry;
  */
 public class RegisterTiles {
     public static void registerTiles() {
-        GameRegistry.registerTileEntity(TileFurnace.class, "mechanicFurnace");
+        GameRegistry.registerTileEntity(TileMechanicalFurnace.class, "mechanicalFurnace");
     }
 }

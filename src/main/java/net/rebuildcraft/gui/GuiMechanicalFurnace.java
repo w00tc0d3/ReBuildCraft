@@ -2,19 +2,29 @@ package net.rebuildcraft.gui;
 
 import net.minecraft.client.gui.inventory.GuiContainer;
 import net.minecraft.entity.player.InventoryPlayer;
-import net.minecraft.inventory.Container;
 import net.minecraft.util.ResourceLocation;
 import net.rebuildcraft.RebuildCraft;
-import net.rebuildcraft.containers.ContainerMechanicFurnace;
-import net.rebuildcraft.tiles.TileFurnace;
+import net.rebuildcraft.containers.ContainerMechanicalFurnace;
+import net.rebuildcraft.tiles.TileMechanicalFurnace;
 import org.lwjgl.opengl.GL11;
 
 /**
  * Created by netchip on 5/3/14.
  */
-public class GuiMechanicFurnace extends GuiContainer {
-    public GuiMechanicFurnace(InventoryPlayer invPlayer, TileFurnace te) {
-        super(new ContainerMechanicFurnace(invPlayer, te));
+public class GuiMechanicalFurnace extends GuiContainer {
+    public GuiMechanicalFurnace(InventoryPlayer invPlayer, TileMechanicalFurnace te) {
+        super(new ContainerMechanicalFurnace(invPlayer, te));
+    }
+
+    // From @AEnterpise's Buildcraft Additions
+    int headerColour = 0xe1c92f;
+    int subheaderColour = 0xaaafb8;
+    int textColour = 0x000000;
+
+    @Override
+    protected void drawGuiContainerForegroundLayer(int var1, int var2) {
+        super.drawGuiContainerForegroundLayer(var1, var2);
+        fontRendererObj.drawString("Mechanical Furnace", xSize/2, ySize/2, headerColour);
     }
 
     @Override

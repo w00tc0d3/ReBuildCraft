@@ -4,8 +4,8 @@ import cpw.mods.fml.common.network.IGuiHandler;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.world.World;
-import net.rebuildcraft.containers.ContainerMechanicFurnace;
-import net.rebuildcraft.tiles.TileFurnace;
+import net.rebuildcraft.containers.ContainerMechanicalFurnace;
+import net.rebuildcraft.tiles.TileMechanicalFurnace;
 
 /**
  * Created by netchip on 5/3/14.
@@ -18,9 +18,9 @@ public class GuiHandler implements IGuiHandler {
             return null;
         switch(ID) {
             case 0:
-                if(!(te instanceof TileFurnace))
+                if(!(te instanceof TileMechanicalFurnace))
                     return null;
-            return new ContainerMechanicFurnace(player.inventory, (TileFurnace) te);
+            return new ContainerMechanicalFurnace(player.inventory, (TileMechanicalFurnace) te);
 
             default:
                 return null;
@@ -34,9 +34,9 @@ public class GuiHandler implements IGuiHandler {
             return null;
         switch(ID) {
             case 0:
-                if(!(te instanceof TileFurnace))
+                if(!(te instanceof TileMechanicalFurnace))
                     return null;
-                return new GuiMechanicFurnace(player.inventory, (TileFurnace) te);
+                return new GuiMechanicalFurnace(player.inventory, (TileMechanicalFurnace) te);
 
             default:
                 return null;

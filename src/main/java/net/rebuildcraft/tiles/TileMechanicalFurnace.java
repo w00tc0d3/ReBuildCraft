@@ -22,7 +22,7 @@ import java.util.Map;
  * Created by netchip on 5/2/14.
  */
 
-public class TileFurnace extends TileEntity implements ISidedInventory {
+public class TileMechanicalFurnace extends TileEntity implements ISidedInventory {
     @MjBattery(maxCapacity = 20000)
     private double mjStored;
     private ItemStack[] itemStacks = new ItemStack[3];

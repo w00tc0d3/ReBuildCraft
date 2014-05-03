@@ -1,6 +1,5 @@
 package net.rebuildcraft.blocks;
 
-import cpw.mods.fml.common.FMLCommonHandler;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 import net.minecraft.block.Block;
@@ -10,14 +9,14 @@ import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.world.World;
 import net.rebuildcraft.RebuildCraft;
-import net.rebuildcraft.tiles.TileFurnace;
+import net.rebuildcraft.tiles.TileMechanicalFurnace;
 
 /**
  * Created by netchip on 5/2/14.
  */
 
-public class BlockFurnace extends Block {
-    public BlockFurnace() {
+public class BlockMechanicalFurnace extends Block {
+    public BlockMechanicalFurnace() {
         super(Material.rock);
         this.setHardness(3.0F);
         this.setResistance(100.0F);
@@ -36,7 +35,7 @@ public class BlockFurnace extends Block {
 
     @Override
     public TileEntity createTileEntity(World world, int metadata) {
-        return new TileFurnace();
+        return new TileMechanicalFurnace();
     }
 
     @Override

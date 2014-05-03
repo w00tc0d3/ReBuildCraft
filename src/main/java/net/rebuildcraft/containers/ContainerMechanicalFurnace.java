@@ -4,18 +4,16 @@ import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.InventoryPlayer;
 import net.minecraft.inventory.Container;
 import net.minecraft.inventory.Slot;
-import net.minecraft.inventory.SlotFurnace;
 import net.minecraft.item.ItemStack;
-import net.minecraft.tileentity.TileEntity;
-import net.rebuildcraft.tiles.TileFurnace;
+import net.rebuildcraft.tiles.TileMechanicalFurnace;
 
 /**
  * Created by netchip on 5/2/14.
  */
-public class ContainerMechanicFurnace extends Container {
-    private TileFurnace tileFurnace;
+public class ContainerMechanicalFurnace extends Container {
+    private TileMechanicalFurnace tileFurnace;
 
-    public ContainerMechanicFurnace(InventoryPlayer invPlayer, TileFurnace te) {
+    public ContainerMechanicalFurnace(InventoryPlayer invPlayer, TileMechanicalFurnace te) {
         this.tileFurnace = te;
 
         // item
