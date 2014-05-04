@@ -16,6 +16,7 @@ import net.rebuildcraft.tiles.TileMechanicalFurnace;
 public class ContainerMechanicalFurnace extends Container {
     private TileMechanicalFurnace tileFurnace;
     private int lastProgress = 0;
+    private double lastMjStored = 0;
 
     public ContainerMechanicalFurnace(InventoryPlayer invPlayer, TileMechanicalFurnace te) {
         this.tileFurnace = te;
