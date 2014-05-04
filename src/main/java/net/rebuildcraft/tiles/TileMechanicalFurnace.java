@@ -28,6 +28,8 @@ public class TileMechanicalFurnace extends TileEntity implements ISidedInventory
     private ItemStack[] itemStacks = new ItemStack[3];
     private int ticks = 0;
     private String nameInv = "InventoryMechanicFurnace";
+    // in percentages, so from 1% to 100%
+    public int progress = 0.0F;
 
     @Override
     public void updateEntity() {
@@ -196,5 +198,21 @@ public class TileMechanicalFurnace extends TileEntity implements ISidedInventory
         return false;
     }
 
+    public boolean canCook() {
+        if(getStackInSlot(0) == null)
+            return false;
 
+        ItemStack is = FurnaceRecipes.smelting().getSmeltingResult(getStackInSlot(0));
+
+        if(getStackInSlot(2) == null)
+            return true;
+
+        if(!(is.isItemEqual(getStackInSlot(2))))
+            return false;
+        if(getStackInSlot(2).stackSize >= getInventoryStackLimit())
+            return false;
+
+        int result = getStackInSlot(2).stackSize + is.stackSize;
+        return result <= getInventoryStackLimit() && result <= this.getStackInSlot(2).getMaxStackSize();
+    }
 }

@@ -1,8 +1,11 @@
 package net.rebuildcraft.containers;
 
+import cpw.mods.fml.relauncher.Side;
+import cpw.mods.fml.relauncher.SideOnly;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.InventoryPlayer;
 import net.minecraft.inventory.Container;
+import net.minecraft.inventory.ICrafting;
 import net.minecraft.inventory.Slot;
 import net.minecraft.item.ItemStack;
 import net.rebuildcraft.tiles.TileMechanicalFurnace;
@@ -12,6 +15,7 @@ import net.rebuildcraft.tiles.TileMechanicalFurnace;
  */
 public class ContainerMechanicalFurnace extends Container {
     private TileMechanicalFurnace tileFurnace;
+    private int lastProgress = 0;
 
     public ContainerMechanicalFurnace(InventoryPlayer invPlayer, TileMechanicalFurnace te) {
         this.tileFurnace = te;
@@ -77,5 +81,31 @@ public class ContainerMechanicalFurnace extends Container {
         }
 
         return itemstack;
+    }
+
+    @Override
+    public void detectAndSendChanges() {
+        super.detectAndSendChanges();
+        for(int i = 0; i < crafters.size(); i++) {
+            ICrafting ic = (ICrafting) crafters.get(i);
+            if(lastProgress != tileFurnace.progress)
+                ic.sendProgressBarUpdate(this, 0, tileFurnace.progress);
+        }
+        lastProgress = tileFurnace.progress;
+    }
+
+    @Override
+    @SideOnly(Side.CLIENT)
+    public void updateProgressBar(int id, int data) {
+        switch(id) {
+            case 0:
+                tileFurnace.progress = data;
+        }
+    }
+
+    @Override
+    public void addCraftingToCrafters(ICrafting ic) {
+        super.addCraftingToCrafters(ic);
+        ic.sendProgressBarUpdate(this, 0, tileFurnace.progress);
     }
 }
