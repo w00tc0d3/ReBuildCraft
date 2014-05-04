@@ -1,6 +1,8 @@
 package net.rebuildcraft.tiles;
 
 import buildcraft.api.mj.MjBattery;
+import cpw.mods.fml.common.ObfuscationReflectionHelper;
+import cpw.mods.fml.common.network.NetworkRegistry;
 import net.minecraft.block.Block;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.init.Blocks;
@@ -13,8 +15,16 @@ import net.minecraft.nbt.NBTTagList;
 import net.minecraft.network.NetworkManager;
 import net.minecraft.network.Packet;
 import net.minecraft.network.play.server.S35PacketUpdateTileEntity;
+import net.minecraft.server.management.PlayerManager;
 import net.minecraft.tileentity.TileEntity;
+import net.minecraft.world.WorldServer;
+import net.rebuildcraft.RebuildCraft;
+import net.rebuildcraft.net.PacketMechanicalFurnace;
 
+import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -31,17 +41,25 @@ public class TileMechanicalFurnace extends TileEntity implements ISidedInventory
     // in percentages, so from 1% to 100%
     public int progress = 0;
     public boolean working = false;
-    public int ticksToProcess = 100;
+    public int ticksToProcess = 60;
+
+    private boolean doOnce = true;
 
     @Override
     public void updateEntity() {
+        if(doOnce) {
+            doOnce = false;
+        }
+
         if(canCook()) {
             working = true;
             ticksToProcess -= 1;
+            updateClient();
             if(ticksToProcess == 0) {
                 smeltItem();
                 ticksToProcess = 100;
                 working = false;
+                updateClient();
             }
         }
     }
@@ -51,6 +69,7 @@ public class TileMechanicalFurnace extends TileEntity implements ISidedInventory
         super.writeToNBT(tag);
 
         tag.setDouble("mjStored", mjStored);
+        tag.setBoolean("working", working);
 
         NBTTagList nbtTagList = new NBTTagList();
         for(int i = 0; i < itemStacks.length; i++) {
@@ -70,6 +89,7 @@ public class TileMechanicalFurnace extends TileEntity implements ISidedInventory
         super.readFromNBT(tag);
 
         mjStored = tag.getDouble("mjStored");
+        working = tag.getBoolean("working");
 
         NBTTagList nbtTagList = tag.getTagList("Items", 10);
         itemStacks = new ItemStack[getSizeInventory()];
@@ -211,10 +231,11 @@ public class TileMechanicalFurnace extends TileEntity implements ISidedInventory
 
         ItemStack is = FurnaceRecipes.smelting().getSmeltingResult(getStackInSlot(0));
 
+        if(is == null)
+            return false;
         if(getStackInSlot(2) == null)
             return true;
-
-        if(!is.isItemEqual(getStackInSlot(2)))
+        if(!(is.isItemEqual(getStackInSlot(2))))
             return false;
         if(getStackInSlot(2).stackSize >= getInventoryStackLimit())
             return false;
@@ -227,7 +248,7 @@ public class TileMechanicalFurnace extends TileEntity implements ISidedInventory
      * Returns true on success.
      */
     public boolean smeltItem() {
-        if(!canCook())
+        if(!(canCook()))
             return false;
         ItemStack is = FurnaceRecipes.smelting().getSmeltingResult(itemStacks[0]);
         if(itemStacks[2] == null)
@@ -240,5 +261,10 @@ public class TileMechanicalFurnace extends TileEntity implements ISidedInventory
             itemStacks[0] = null;
 
         return true;
+    }
+
+    public void updateClient() {
+        PacketMechanicalFurnace packet = new PacketMechanicalFurnace(worldObj.provider.dimensionId, xCoord, yCoord, zCoord, working);
+        RebuildCraft.packetPipeline.sendToAllWatching(packet, xCoord, zCoord, worldObj);
     }
 }
