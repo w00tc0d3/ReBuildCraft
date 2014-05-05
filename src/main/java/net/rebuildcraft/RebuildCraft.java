@@ -35,6 +35,7 @@ public class RebuildCraft {
     public void preInit(FMLPreInitializationEvent event) {
         RegisterBlocks.registerBlocks();
         RegisterTiles.registerTiles();
+        // MinecraftForge.EVENT_BUS.register(new ChunkWatchEventListener());
     }
 
     @Mod.EventHandler
@@ -42,7 +43,7 @@ public class RebuildCraft {
         proxy.registerRenderers();
         NetworkRegistry.INSTANCE.registerGuiHandler(this, guiHandler);
         packetPipeline.initialise();
-        MinecraftForge.EVENT_BUS.register(new ChunkWatchEventListener());
+
     }
 
     @Mod.EventHandler

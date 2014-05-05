@@ -18,7 +18,7 @@ public class ChunkWatchEventListener {
     private Map<ChunkCoordIntPair, List<EntityPlayerMP>> map = new HashMap<ChunkCoordIntPair, List<EntityPlayerMP>>();
 
     @SubscribeEvent
-    void chunkWatchListener(ChunkWatchEvent.Watch watch) {
+    public void chunkWatchListener(ChunkWatchEvent.Watch watch) {
         if(map.containsKey(watch.chunk)) {
             entityList = map.get(watch.chunk);
             entityList.add(watch.player);
@@ -26,13 +26,27 @@ public class ChunkWatchEventListener {
             map.put(watch.chunk, entityList);
         } else {
             entityList.add(watch.player);
-            System.out.println(watch.player);
             map.put(watch.chunk, entityList);
         }
     }
 
     @SubscribeEvent
-    void chunkUnWatchListener(ChunkWatchEvent.UnWatch unwatch) {
+    public void chunkUnWatchListener(ChunkWatchEvent.UnWatch unwatch) {
+        if(map.containsKey(unwatch.chunk)) {
+            entityList = map.get(unwatch.chunk);
+            if(entityList.size() <= 1)
+                map.remove(unwatch.chunk);
+            else {
+                entityList.remove(unwatch.player);
+                map.remove(unwatch.chunk);
+                map.put(unwatch.chunk, entityList);
+            }
+        }
+    }
 
+    public List<EntityPlayerMP> returnPlayersWatchingChunk(ChunkCoordIntPair chunk) {
+        if(map.containsKey(chunk))
+            return map.get(chunk);
+        return new ArrayList<EntityPlayerMP>(0);
     }
 }

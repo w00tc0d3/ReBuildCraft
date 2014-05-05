@@ -5,6 +5,7 @@ import cpw.mods.fml.common.ObfuscationReflectionHelper;
 import cpw.mods.fml.common.network.NetworkRegistry;
 import net.minecraft.block.Block;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.init.Blocks;
 import net.minecraft.inventory.IInventory;
 import net.minecraft.inventory.ISidedInventory;
@@ -26,6 +27,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -41,7 +43,9 @@ public class TileMechanicalFurnace extends TileEntity implements ISidedInventory
     // in percentages, so from 1% to 100%
     public int progress = 0;
     public boolean working = false;
-    public int ticksToProcess = 60;
+
+    private int ticksToProcess = 60;
+    private int mjUsePerTick = 1; // 1 MJ/t
 
     private boolean doOnce = true;
 
@@ -54,13 +58,18 @@ public class TileMechanicalFurnace extends TileEntity implements ISidedInventory
         if(canCook()) {
             working = true;
             ticksToProcess -= 1;
-            updateClient();
+            mjStored -= mjUsePerTick;
             if(ticksToProcess == 0) {
                 smeltItem();
                 ticksToProcess = 100;
                 working = false;
-                updateClient();
             }
+        }
+
+        ticks++;
+        if(ticks == 10) {
+            updateClient();
+            ticks = 0;
         }
     }
 
@@ -229,6 +238,13 @@ public class TileMechanicalFurnace extends TileEntity implements ISidedInventory
         if(getStackInSlot(0) == null)
             return false;
 
+        if(mjStored <= 0) {
+            mjStored = 0;
+            progress = 0;
+            working = false;
+            return false;
+        }
+
         ItemStack is = FurnaceRecipes.smelting().getSmeltingResult(getStackInSlot(0));
 
         if(is == null)
@@ -250,6 +266,7 @@ public class TileMechanicalFurnace extends TileEntity implements ISidedInventory
     public boolean smeltItem() {
         if(!(canCook()))
             return false;
+
         ItemStack is = FurnaceRecipes.smelting().getSmeltingResult(itemStacks[0]);
         if(itemStacks[2] == null)
             itemStacks[2] = is.copy();

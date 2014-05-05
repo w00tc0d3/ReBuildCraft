@@ -1,6 +1,7 @@
 package net.rebuildcraft.net;
 
 import cpw.mods.fml.common.FMLCommonHandler;
+import cpw.mods.fml.common.asm.transformers.deobf.FMLDeobfuscatingRemapper;
 import cpw.mods.fml.common.network.FMLEmbeddedChannel;
 import cpw.mods.fml.common.network.FMLOutboundHandler;
 import cpw.mods.fml.common.network.NetworkRegistry;
@@ -15,10 +16,15 @@ import io.netty.handler.codec.MessageToMessageCodec;
 import net.minecraft.client.Minecraft;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
+import net.minecraft.launchwrapper.Launch;
 import net.minecraft.network.INetHandler;
 import net.minecraft.network.NetHandlerPlayServer;
+import net.minecraft.server.management.PlayerManager;
 import net.minecraft.world.World;
+import net.minecraft.world.WorldServer;
 
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.util.*;
 
 /**
@@ -32,6 +38,7 @@ public class PacketPipeline extends MessageToMessageCodec<FMLProxyPacket, Abstra
     private EnumMap<Side, FMLEmbeddedChannel>           channels;
     private LinkedList<Class<? extends AbstractPacket>> packets           = new LinkedList<Class<? extends AbstractPacket>>();
     private boolean                                     isPostInitialised = false;
+    private boolean deObfuscatedEnvironment;
 
     /**
      * Register your packet with the pipeline. Discriminators are automatically set.
@@ -190,9 +197,33 @@ public class PacketPipeline extends MessageToMessageCodec<FMLProxyPacket, Abstra
         if(world.isRemote)
             return;
 
-        int xChunk = x >> 4;
-        int zChunk = z >> 4;
-        //TODO BROKEN!
+        int chunkX = x >> 4;
+        int chunkZ = z >> 4;
+
+        WorldServer ws = (WorldServer) world;
+        PlayerManager pm = ws.getPlayerManager();
+        List<EntityPlayerMP> playersWatchingChunk;
+
+        deObfuscatedEnvironment = (Boolean) Launch.blackboard.get("fml.deobfuscatedEnvironment");
+
+        try {
+            Class piClass = Class.forName("net.minecraft.server.management.PlayerManager$PlayerInstance");
+            Method m = pm.getClass().getDeclaredMethod("getOrCreateChunkWatcher", Integer.TYPE, Integer.TYPE, Boolean.TYPE);
+            m.setAccessible(true);
+            Object pi = m.invoke(pm, chunkX, chunkZ, false);
+            Field f = piClass.getDeclaredField("playersWatchingChunk");
+            f.setAccessible(true);
+            playersWatchingChunk = (List) f.get(pi);
+        } catch (Exception e) {
+            throw new RuntimeException("Reflection Error!", e);
+        }
+
+        if(playersWatchingChunk == null)
+            return;
+
+        for(EntityPlayerMP epm : playersWatchingChunk) {
+            sendTo(message, epm);
+        }
 
     }
 
