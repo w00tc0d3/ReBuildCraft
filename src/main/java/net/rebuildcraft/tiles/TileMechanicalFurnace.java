@@ -35,41 +35,32 @@ import java.util.Map;
  */
 
 public class TileMechanicalFurnace extends TileEntity implements ISidedInventory {
-    @MjBattery(maxCapacity = 20000)
-    private double mjStored;
+    @MjBattery(maxCapacity = 20000, maxReceivedPerCycle = 128)
+    public double mjStored;
     private ItemStack[] itemStacks = new ItemStack[3];
-    private int ticks = 0;
     private String nameInv = "InventoryMechanicFurnace";
-    // in percentages, so from 1% to 100%
-    public int progress = 0;
     public boolean working = false;
 
-    private int ticksToProcess = 60;
+    public int ticks = 0;
+    public int ticksToProcess = 60;
     private int mjUsePerTick = 1; // 1 MJ/t
-
-    private boolean doOnce = true;
 
     @Override
     public void updateEntity() {
-        if(doOnce) {
-            doOnce = false;
-        }
-
         if(canCook()) {
+            if(mjStored < mjUsePerTick)
+                return;
+
             working = true;
-            ticksToProcess -= 1;
             mjStored -= mjUsePerTick;
-            if(ticksToProcess == 0) {
+            ticks += 1;
+
+            if(ticks == ticksToProcess) {
                 smeltItem();
-                ticksToProcess = 100;
+                ticks = 0;
                 working = false;
             }
-        }
-
-        ticks++;
-        if(ticks == 10) {
             updateClient();
-            ticks = 0;
         }
     }
 
@@ -238,13 +229,6 @@ public class TileMechanicalFurnace extends TileEntity implements ISidedInventory
         if(getStackInSlot(0) == null)
             return false;
 
-        if(mjStored <= 0) {
-            mjStored = 0;
-            progress = 0;
-            working = false;
-            return false;
-        }
-
         ItemStack is = FurnaceRecipes.smelting().getSmeltingResult(getStackInSlot(0));
 
         if(is == null)
@@ -281,7 +265,7 @@ public class TileMechanicalFurnace extends TileEntity implements ISidedInventory
     }
 
     public void updateClient() {
-        PacketMechanicalFurnace packet = new PacketMechanicalFurnace(worldObj.provider.dimensionId, xCoord, yCoord, zCoord, working);
+        PacketMechanicalFurnace packet = new PacketMechanicalFurnace(worldObj.provider.dimensionId, xCoord, yCoord, zCoord, working, mjStored);
         RebuildCraft.packetPipeline.sendToAllWatching(packet, xCoord, zCoord, worldObj);
     }
 }

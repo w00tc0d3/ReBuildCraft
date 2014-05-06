@@ -12,17 +12,19 @@ import net.rebuildcraft.tiles.TileMechanicalFurnace;
 public class PacketMechanicalFurnace extends AbstractPacket {
     private int  dim, x, y, z;
     private boolean working;
+    private double mjStored;
 
     public PacketMechanicalFurnace() {
 
     }
 
-    public PacketMechanicalFurnace(int dim, int x, int y, int z, boolean working) {
+    public PacketMechanicalFurnace(int dim, int x, int y, int z, boolean working, double mjStored) {
         this.dim = dim;
         this.x = x;
         this.y = y;
         this.z = z;
         this.working = working;
+        this.mjStored = mjStored;
     }
 
     @Override
@@ -32,6 +34,7 @@ public class PacketMechanicalFurnace extends AbstractPacket {
         buffer.writeInt(y);
         buffer.writeInt(z);
         buffer.writeBoolean(working);
+        buffer.writeDouble(mjStored);
     }
 
     @Override
@@ -41,6 +44,7 @@ public class PacketMechanicalFurnace extends AbstractPacket {
         y = buffer.readInt();
         z = buffer.readInt();
         working = buffer.readBoolean();
+        mjStored = buffer.readDouble();
     }
 
     @Override
@@ -48,6 +52,7 @@ public class PacketMechanicalFurnace extends AbstractPacket {
         TileEntity te = player.worldObj.getTileEntity(x, y, z);
         if(te instanceof TileMechanicalFurnace) {
             ((TileMechanicalFurnace) te).working = this.working;
+            ((TileMechanicalFurnace) te).mjStored = this.mjStored;
         }
     }
 

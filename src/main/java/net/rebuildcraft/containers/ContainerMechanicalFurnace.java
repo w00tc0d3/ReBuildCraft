@@ -8,25 +8,26 @@ import net.minecraft.inventory.Container;
 import net.minecraft.inventory.ICrafting;
 import net.minecraft.inventory.Slot;
 import net.minecraft.item.ItemStack;
+import net.minecraft.item.crafting.FurnaceRecipes;
 import net.rebuildcraft.tiles.TileMechanicalFurnace;
+import net.rebuildcraft.util.Util;
 
 /**
  * Created by netchip on 5/2/14.
  */
 public class ContainerMechanicalFurnace extends Container {
     private TileMechanicalFurnace tileFurnace;
-    private int lastProgress = 0;
-    private double lastMjStored = 0;
+    private int lastTicks = 0;
 
     public ContainerMechanicalFurnace(InventoryPlayer invPlayer, TileMechanicalFurnace te) {
         this.tileFurnace = te;
 
         // item
-        this.addSlotToContainer(new Slot(te, 0, 56, 17));
+        this.addSlotToContainer(new SlotFurnace(te, 0, 56, 17));
         // fuel
         this.addSlotToContainer(new Slot(te, 1, 56, 53));
         // output
-        this.addSlotToContainer(new Slot(te, 2, 116, 35));
+        this.addSlotToContainer(new SlotOutput(te, 2, 116, 35));
 
         // player inventory
         for (int i = 0; i < 3; ++i) {
@@ -49,39 +50,33 @@ public class ContainerMechanicalFurnace extends Container {
     }
 
     @Override
-    public ItemStack transferStackInSlot(EntityPlayer par1EntityPlayer, int par2)
+    public ItemStack transferStackInSlot(EntityPlayer entityPlayer, int slotID)
     {
-        ItemStack itemstack = null;
-        Slot slot = (Slot)this.inventorySlots.get(par2);
+        ItemStack is = null;
+        Slot slot = (Slot) inventorySlots.get(slotID);
+        if(slot == null)
+            return null;
 
-        if (slot != null && slot.getHasStack())
-        {
-            ItemStack itemstack1 = slot.getStack();
-            itemstack = itemstack1.copy();
-
-            if (par2 < tileFurnace.getSizeInventory())
-            {
-                if (!this.mergeItemStack(itemstack1, tileFurnace.getSizeInventory(), inventorySlots.size(), true))
-                {
+        if(slot.getHasStack()) {
+            ItemStack copy = slot.getStack();
+            is = copy.copy();
+            if(slotID < tileFurnace.getSizeInventory()) {
+                if(!(mergeItemStack(copy, tileFurnace.getSizeInventory(), inventorySlots.size(), true)))
                     return null;
-                }
+            } else {
+                boolean canSmelt = Util.fitsFurnaceSlot(copy);
+                if(!canSmelt)
+                    return null;
+                if(!(mergeItemStack(copy, 0, tileFurnace.getSizeInventory(), false)))
+                    return null;
             }
-            else if (!this.mergeItemStack(itemstack1, 0, tileFurnace.getSizeInventory(), false))
-            {
-                return null;
-            }
-
-            if (itemstack1.stackSize == 0)
-            {
-                slot.putStack((ItemStack) null);
-            }
+            if(copy.stackSize == 0)
+                slot.putStack(null);
             else
-            {
                 slot.onSlotChanged();
-            }
         }
 
-        return itemstack;
+        return is;
     }
 
     @Override
@@ -89,10 +84,10 @@ public class ContainerMechanicalFurnace extends Container {
         super.detectAndSendChanges();
         for(int i = 0; i < crafters.size(); i++) {
             ICrafting ic = (ICrafting) crafters.get(i);
-            if(lastProgress != tileFurnace.progress)
-                ic.sendProgressBarUpdate(this, 0, tileFurnace.progress);
+            if(lastTicks != tileFurnace.ticks)
+                ic.sendProgressBarUpdate(this, 0, tileFurnace.ticks);
         }
-        lastProgress = tileFurnace.progress;
+        lastTicks = tileFurnace.ticks;
     }
 
     @Override
@@ -100,13 +95,13 @@ public class ContainerMechanicalFurnace extends Container {
     public void updateProgressBar(int id, int data) {
         switch(id) {
             case 0:
-                tileFurnace.progress = data;
+                tileFurnace.ticks = data;
         }
     }
 
     @Override
     public void addCraftingToCrafters(ICrafting ic) {
         super.addCraftingToCrafters(ic);
-        ic.sendProgressBarUpdate(this, 0, tileFurnace.progress);
+        ic.sendProgressBarUpdate(this, 0, tileFurnace.ticks);
     }
 }

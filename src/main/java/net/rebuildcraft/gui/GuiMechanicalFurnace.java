@@ -12,8 +12,13 @@ import org.lwjgl.opengl.GL11;
  * Created by netchip on 5/3/14.
  */
 public class GuiMechanicalFurnace extends GuiContainer {
+    private TileMechanicalFurnace te;
+    private float convertPercentage;
+    private final ResourceLocation texture = new ResourceLocation(RebuildCraft.modid + ":textures/gui/container/furnace.png");
+
     public GuiMechanicalFurnace(InventoryPlayer invPlayer, TileMechanicalFurnace te) {
         super(new ContainerMechanicalFurnace(invPlayer, te));
+        this.te = te;
     }
 
     // From @AEnterpise's Buildcraft Additions
@@ -30,10 +35,14 @@ public class GuiMechanicalFurnace extends GuiContainer {
     @Override
     protected void drawGuiContainerBackgroundLayer(float var1, int var2, int var3) {
         GL11.glColor4f(1.0F, 1.0F, 1.0F, 1.0F);
-        this.mc.renderEngine.bindTexture(new ResourceLocation(RebuildCraft.modid + ":textures/gui/container/furnace.png"));
+        this.mc.renderEngine.bindTexture(texture);
         int x = (width - xSize) / 2;
         int y = (height - ySize) / 2;
         this.drawTexturedModalRect(x, y, 0, 0, xSize, ySize);
+
+        convertPercentage = (float) te.ticks / (float) te.ticksToProcess;
+
+        this.drawTexturedModalRect(x + 79, y + 34, 176, 14, (int) ((convertPercentage * 24) + 1), 16);
     }
 
     protected int getOffset(String s) {

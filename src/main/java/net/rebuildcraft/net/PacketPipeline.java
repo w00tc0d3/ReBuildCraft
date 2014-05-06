@@ -20,8 +20,10 @@ import net.minecraft.launchwrapper.Launch;
 import net.minecraft.network.INetHandler;
 import net.minecraft.network.NetHandlerPlayServer;
 import net.minecraft.server.management.PlayerManager;
+import net.minecraft.world.ChunkCoordIntPair;
 import net.minecraft.world.World;
 import net.minecraft.world.WorldServer;
+import net.rebuildcraft.RebuildCraft;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
@@ -39,6 +41,11 @@ public class PacketPipeline extends MessageToMessageCodec<FMLProxyPacket, Abstra
     private LinkedList<Class<? extends AbstractPacket>> packets           = new LinkedList<Class<? extends AbstractPacket>>();
     private boolean                                     isPostInitialised = false;
     private boolean deObfuscatedEnvironment;
+    private Class piClass = null;
+    private Field f = null;
+    private Method m = null;
+    private Object pi = null;
+
 
     /**
      * Register your packet with the pipeline. Discriminators are automatically set.
@@ -192,6 +199,7 @@ public class PacketPipeline extends MessageToMessageCodec<FMLProxyPacket, Abstra
         this.channels.get(Side.SERVER).writeAndFlush(message);
     }
 
+    //TODO Work In Progress
     // Only call this when sending server -> client
     public void sendToAllWatching(AbstractPacket message, int x, int z, World world) {
         if(world.isRemote)
@@ -204,14 +212,34 @@ public class PacketPipeline extends MessageToMessageCodec<FMLProxyPacket, Abstra
         PlayerManager pm = ws.getPlayerManager();
         List<EntityPlayerMP> playersWatchingChunk;
 
+        String getOrCreateChunkWatcher;
+        String pwc;
+
         deObfuscatedEnvironment = (Boolean) Launch.blackboard.get("fml.deobfuscatedEnvironment");
 
+        if(deObfuscatedEnvironment) {
+            getOrCreateChunkWatcher = "getOrCreateChunkWatcher";
+            pwc = "playersWatchingChunk";
+        } else {
+            getOrCreateChunkWatcher = "func_72690_a";
+            pwc = "field_73263_b";
+        }
+
         try {
-            Class piClass = Class.forName("net.minecraft.server.management.PlayerManager$PlayerInstance");
-            Method m = pm.getClass().getDeclaredMethod("getOrCreateChunkWatcher", Integer.TYPE, Integer.TYPE, Boolean.TYPE);
+            if(piClass == null)
+                piClass = Class.forName("net.minecraft.server.management.PlayerManager$PlayerInstance");
+            // getOrCreateChunkWatcher: func_72690_a
+            if(m == null)
+                m = pm.getClass().getDeclaredMethod(getOrCreateChunkWatcher, Integer.TYPE, Integer.TYPE, Boolean.TYPE);
             m.setAccessible(true);
-            Object pi = m.invoke(pm, chunkX, chunkZ, false);
-            Field f = piClass.getDeclaredField("playersWatchingChunk");
+            pi = m.invoke(pm, chunkX, chunkZ, false);
+
+            if(pi == null)
+                return;
+
+            // playersWatchingChunk: field_73263_b
+            if(f == null)
+                f = piClass.getDeclaredField(pwc);
             f.setAccessible(true);
             playersWatchingChunk = (List) f.get(pi);
         } catch (Exception e) {
@@ -226,6 +254,13 @@ public class PacketPipeline extends MessageToMessageCodec<FMLProxyPacket, Abstra
         }
 
     }
+
+    /*public void sendToAllWatching(AbstractPacket message, int x, int z, World world) {
+        List<EntityPlayerMP> list = RebuildCraft.chunkListener.returnPlayersWatchingChunk(new ChunkCoordIntPair(x >> 4, z >> 4));
+        for(EntityPlayerMP mp : list) {
+            sendTo(message, mp);
+        }
+    }*/
 
     /**
      * Send this message to everyone within the supplied dimension.

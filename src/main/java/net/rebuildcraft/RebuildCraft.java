@@ -30,12 +30,13 @@ public class RebuildCraft {
 
     private GuiHandler guiHandler = new GuiHandler();
     public static final PacketPipeline packetPipeline = new PacketPipeline();
+    public static final ChunkWatchEventListener chunkListener = new ChunkWatchEventListener();
 
     @Mod.EventHandler
     public void preInit(FMLPreInitializationEvent event) {
         RegisterBlocks.registerBlocks();
         RegisterTiles.registerTiles();
-        // MinecraftForge.EVENT_BUS.register(new ChunkWatchEventListener());
+        MinecraftForge.EVENT_BUS.register(chunkListener);
     }
 
     @Mod.EventHandler
