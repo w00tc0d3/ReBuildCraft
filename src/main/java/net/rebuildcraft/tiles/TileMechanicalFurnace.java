@@ -19,8 +19,10 @@ import net.minecraft.network.play.server.S35PacketUpdateTileEntity;
 import net.minecraft.server.management.PlayerManager;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.world.WorldServer;
+import net.minecraftforge.common.util.ForgeDirection;
 import net.rebuildcraft.RebuildCraft;
 import net.rebuildcraft.net.PacketMechanicalFurnace;
+import net.rebuildcraft.util.Util;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
@@ -122,16 +124,39 @@ public class TileMechanicalFurnace extends TileEntity implements ISidedInventory
 
     @Override
     public int[] getAccessibleSlotsFromSide(int var1) {
-        return new int[0];
+        ForgeDirection fd = ForgeDirection.getOrientation(var1);
+        int[] accessSlots = new int[1];
+        if(fd == ForgeDirection.UP) {
+            accessSlots[0] = 0;
+            return accessSlots;
+        }
+        accessSlots[0] = 2;
+        return accessSlots;
     }
 
     @Override
-    public boolean canInsertItem(int var1, ItemStack var2, int var3) {
+    public boolean canInsertItem(int slotID, ItemStack is, int side) {
+        if(is == null)
+            return false;
+        if(slotID != 0)
+            return false;
+        if(!Util.fitsFurnaceSlot(is))
+            return false;
+        if(itemStacks[slotID] == null)
+            return true;
+        if(is.isItemEqual(itemStacks[slotID]) && (is.stackSize + itemStacks[slotID].stackSize) < getInventoryStackLimit())
+            return true;
         return false;
     }
 
     @Override
-    public boolean canExtractItem(int var1, ItemStack var2, int var3) {
+    public boolean canExtractItem(int slotID, ItemStack is, int side) {
+        if(ForgeDirection.getOrientation(side) == ForgeDirection.UP)
+            return false;
+        if(slotID != 2)
+            return false;
+        if(itemStacks[slotID] != null)
+            return true;
         return false;
     }
 
@@ -221,7 +246,17 @@ public class TileMechanicalFurnace extends TileEntity implements ISidedInventory
     }
 
     @Override
-    public boolean isItemValidForSlot(int var1, ItemStack var2) {
+    public boolean isItemValidForSlot(int slotID, ItemStack is) {
+        if(is == null)
+            return false;
+        if(slotID != 0)
+            return false;
+        if(!Util.fitsFurnaceSlot(is))
+            return false;
+        if(itemStacks[slotID] == null)
+            return true;
+        if(is.isItemEqual(itemStacks[slotID]))
+            return true;
         return false;
     }
 

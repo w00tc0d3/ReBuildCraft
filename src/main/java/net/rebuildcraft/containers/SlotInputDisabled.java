@@ -9,8 +9,8 @@ import net.rebuildcraft.tiles.TileMechanicalFurnace;
 /**
  * Created by netchip on 5/5/14.
  */
-public class SlotOutput extends Slot {
-    public SlotOutput(IInventory par1IInventory, int var1, int var2, int var3) {
+public class SlotInputDisabled extends Slot {
+    public SlotInputDisabled(IInventory par1IInventory, int var1, int var2, int var3) {
         super(par1IInventory, var1, var2, var3);
     }
 

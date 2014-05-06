@@ -25,9 +25,9 @@ public class ContainerMechanicalFurnace extends Container {
         // item
         this.addSlotToContainer(new SlotFurnace(te, 0, 56, 17));
         // fuel
-        this.addSlotToContainer(new Slot(te, 1, 56, 53));
+        this.addSlotToContainer(new SlotInputDisabled(te, 1, 56, 53));
         // output
-        this.addSlotToContainer(new SlotOutput(te, 2, 116, 35));
+        this.addSlotToContainer(new SlotInputDisabled(te, 2, 116, 35));
 
         // player inventory
         for (int i = 0; i < 3; ++i) {
